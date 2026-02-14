@@ -544,6 +544,136 @@ struct HootEncoderTests {
         #expect(converted == doc)
     }
 
+    // MARK: - Bare Names (no colon prefix)
+
+    @Test("usingDefaultPrefix produces bare names without colon")
+    func usingDefaultPrefixBareNames() {
+        let doc = HootDocument(
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")],
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [HootClass(iri: "ex:Person")]
+                )),
+                .tabular(HootTabularSection(
+                    name: "ObjectProperty",
+                    fields: ["iri"],
+                    rows: [["ex:partOf"]]
+                )),
+                .disjoint(HootDisjointSection(groups: [["ex:A", "ex:B"]])),
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Toyota",
+                    properties: [
+                        HootProperty(predicate: "ex:locatedIn", objects: [.iri("ex:Japan")]),
+                    ]
+                )),
+            ]
+        )
+        let converted = doc.usingDefaultPrefix("ex")
+
+        // Class hierarchy
+        if case .classHierarchy(let h) = converted.sections[0] {
+            #expect(h.classes[0].iri == "Person")
+        }
+        // Tabular
+        if case .tabular(let t) = converted.sections[1] {
+            #expect(t.rows[0] == ["partOf"])
+        }
+        // Disjoint
+        if case .disjoint(let d) = converted.sections[2] {
+            #expect(d.groups[0] == ["A", "B"])
+        }
+        // Subject block
+        if case .subjectBlock(let b) = converted.sections[3] {
+            #expect(b.subject == "Toyota")
+            #expect(b.properties[0].predicate == "locatedIn")
+        }
+    }
+
+    @Test("usingDefaultPrefix does not affect other prefixes")
+    func usingDefaultPrefixOtherPrefixUntouched() {
+        let doc = HootDocument(
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")],
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Alice",
+                    properties: [
+                        HootProperty(predicate: "rdfs:label", objects: [.literal("Alice")]),
+                        HootProperty(predicate: "a", objects: [.iri("owl:Thing")]),
+                    ]
+                ))
+            ]
+        )
+        let converted = doc.usingDefaultPrefix("ex")
+
+        if case .subjectBlock(let b) = converted.sections[0] {
+            #expect(b.subject == "Alice")
+            // rdfs: and owl: are untouched
+            #expect(b.properties[0].predicate == "rdfs:label")
+            if case .iri(let iri) = b.properties[1].objects[0] {
+                #expect(iri == "owl:Thing")
+            }
+        }
+    }
+
+    // MARK: - Compact Label Omission
+
+    @Test("Compact mode omits label matching IRI local name")
+    func compactOmitsRedundantLabel() {
+        let compactEncoder = HootEncoder(mode: .compact)
+        let doc = HootDocument(
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")],
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [
+                        HootClass(iri: "ex:Person", label: "Person"),
+                    ]
+                ))
+            ]
+        )
+        let result = compactEncoder.encode(doc)
+        // Label "Person" matches local name "Person" → omitted
+        #expect(result.contains(" Person\n"))
+        #expect(!result.contains("\"Person\""))
+    }
+
+    @Test("Compact mode keeps label differing from IRI local name")
+    func compactKeepsDifferentLabel() {
+        let compactEncoder = HootEncoder(mode: .compact)
+        let doc = HootDocument(
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")],
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [
+                        HootClass(iri: "ex:GovernmentAgency", label: "Government Agency"),
+                        HootClass(iri: "ex:Project", label: "プロジェクト"),
+                    ]
+                ))
+            ]
+        )
+        let result = compactEncoder.encode(doc)
+        #expect(result.contains(" GovernmentAgency \"Government Agency\""))
+        #expect(result.contains(" Project \"プロジェクト\""))
+    }
+
+    @Test("Lossless mode always shows label even when it matches")
+    func losslessKeepsMatchingLabel() {
+        let doc = HootDocument(
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [
+                        HootClass(iri: "ex:Person", label: "Person"),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" ex:Person \"Person\""))
+    }
+
     @Test("Escapes special characters in strings")
     func escapeCharacters() {
         let doc = HootDocument(
