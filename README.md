@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="hoot.jpg" alt="HOOT" width="320">
+</p>
+
 # swift-hoot
 
 Swift implementation of [HOOT](https://github.com/hoot-format/spec) (Hierarchical Ontology-Optimized Tokens).
