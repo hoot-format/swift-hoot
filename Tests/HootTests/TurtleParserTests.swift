@@ -218,4 +218,245 @@ struct TurtleParserTests {
         let doc = try parser.parse(input)
         #expect(doc.triples.count == 2)
     }
+
+    // MARK: - Edge Cases
+
+    @Test("Parses empty input")
+    func emptyInput() throws {
+        let doc = try parser.parse("")
+        #expect(doc.prefixes.isEmpty)
+        #expect(doc.triples.isEmpty)
+        #expect(doc.base == nil)
+    }
+
+    @Test("Parses only prefixes, no triples")
+    func onlyPrefixes() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        @prefix owl: <http://www.w3.org/2002/07/owl#> .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.prefixes.count == 2)
+        #expect(doc.triples.isEmpty)
+    }
+
+    @Test("Parses @base directive")
+    func baseDirective() throws {
+        let input = """
+        @base <http://example.org/> .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.base == "http://example.org/")
+    }
+
+    @Test("Parses SPARQL-style PREFIX without dot")
+    func sparqlPrefix() throws {
+        let input = """
+        PREFIX ex: <http://example.org/>
+        ex:Person a ex:Class .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.prefixes.count == 1)
+        #expect(doc.prefixes[0].name == "ex")
+        #expect(doc.triples.count == 1)
+    }
+
+    @Test("Parses SPARQL-style BASE without dot")
+    func sparqlBase() throws {
+        let input = """
+        BASE <http://example.org/>
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.base == "http://example.org/")
+    }
+
+    @Test("Parses empty blank node []")
+    func emptyBlankNode() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        [] ex:knows ex:Alice .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples.count == 1)
+        #expect(doc.triples[0].subject == .blankNode("b0"))
+    }
+
+    @Test("Parses empty collection ()")
+    func emptyCollection() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:Thing ex:list () .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples.count == 1)
+        if case .collection(let items) = doc.triples[0].object {
+            #expect(items.isEmpty)
+        } else {
+            #expect(Bool(false), "Expected empty collection")
+        }
+    }
+
+    @Test("Parses nested blank node property lists")
+    func nestedBlankNodes() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:has [
+            ex:inner [
+                ex:value "deep"
+            ]
+        ] .
+        """
+        let doc = try parser.parse(input)
+        // Inner blank node triples emitted first
+        // _:b1 ex:value "deep"
+        #expect(doc.triples[0].subject == .blankNode("b1"))
+        #expect(doc.triples[0].object == .literal("deep", datatype: nil, language: nil))
+        // _:b0 ex:inner _:b1
+        #expect(doc.triples[1].subject == .blankNode("b0"))
+        #expect(doc.triples[1].object == .blankNode("b1"))
+        // ex:A ex:has _:b0
+        #expect(doc.triples[2].subject == .prefixedName(prefix: "ex", local: "A"))
+        #expect(doc.triples[2].object == .blankNode("b0"))
+    }
+
+    @Test("Parses collection with mixed types")
+    func collectionMixedTypes() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:Thing ex:list ( "hello" 42 true ex:A ) .
+        """
+        let doc = try parser.parse(input)
+        if case .collection(let items) = doc.triples[0].object {
+            #expect(items.count == 4)
+            #expect(items[0] == .literal("hello", datatype: nil, language: nil))
+            #expect(items[1] == .number("42"))
+            #expect(items[2] == .boolean(true))
+            #expect(items[3] == .prefixedName(prefix: "ex", local: "A"))
+        } else {
+            #expect(Bool(false), "Expected collection")
+        }
+    }
+
+    @Test("Parses multiple triples for same subject")
+    func multipleTriplesSameSubject() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:p1 "v1" .
+        ex:A ex:p2 "v2" .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples.count == 2)
+        #expect(doc.triples[0].subject == doc.triples[1].subject)
+    }
+
+    @Test("Parses double literal with exponent")
+    func doubleLiteral() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:Thing ex:val 1.5e10 .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples[0].object == .number("1.5e10"))
+    }
+
+    @Test("Parses typed literal with full IRI datatype")
+    func typedLiteralFullIRI() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:Thing ex:val "42"^^<http://www.w3.org/2001/XMLSchema#integer> .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples[0].object == .literal(
+            "42",
+            datatype: .iri("http://www.w3.org/2001/XMLSchema#integer"),
+            language: nil
+        ))
+    }
+
+    @Test("Parses blank node as object")
+    func blankNodeObject() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:knows _:someone .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples[0].object == .blankNode("someone"))
+    }
+
+    @Test("Blank node property list as subject with dot only")
+    func blankNodePropertyListSubjectDotOnly() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        [ a ex:Thing ] .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples.count == 1)
+        #expect(doc.triples[0].subject == .blankNode("b0"))
+    }
+
+    // MARK: - Error Paths
+
+    @Test("Throws on missing dot after triple")
+    func missingDot() {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:p "v"
+        """
+        #expect(throws: TurtleParserError.self) {
+            try parser.parse(input)
+        }
+    }
+
+    @Test("Throws on missing object")
+    func missingObject() {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:p .
+        """
+        #expect(throws: (any Error).self) {
+            try parser.parse(input)
+        }
+    }
+
+    @Test("Subject with only dot produces no triples")
+    func subjectOnlyDot() throws {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A .
+        """
+        let doc = try parser.parse(input)
+        #expect(doc.triples.isEmpty)
+    }
+
+    @Test("Throws on invalid prefix declaration")
+    func invalidPrefixDeclaration() {
+        #expect(throws: (any Error).self) {
+            try parser.parse("@prefix \"bad\" .")
+        }
+    }
+
+    @Test("Throws on missing IRI in prefix declaration")
+    func missingIRIInPrefix() {
+        #expect(throws: (any Error).self) {
+            try parser.parse("@prefix ex: .")
+        }
+    }
+
+    @Test("Throws on unterminated collection")
+    func unterminatedCollection() {
+        let input = """
+        @prefix ex: <http://example.org/> .
+        ex:A ex:p ( ex:B ex:C
+        """
+        #expect(throws: (any Error).self) {
+            try parser.parse(input)
+        }
+    }
+
+    @Test("Throws on missing IRI after @base")
+    func missingIRIAfterBase() {
+        #expect(throws: TurtleParserError.self) {
+            try parser.parse("@base .")
+        }
+    }
 }
