@@ -25,7 +25,7 @@ public struct HootEncoder: Sendable {
             if mode == .compact && isStandardPrefix(prefix.name) {
                 continue
             }
-            lines.append("prefix \(prefix.name): <\(prefix.iri)>")
+            lines.append("@\(prefix.name) \(compactIRI(prefix.iri))")
         }
 
         // 2. Sections
@@ -176,7 +176,6 @@ public struct HootEncoder: Sendable {
             value == "null" ||
             value == "a" ||
             value == "class" ||
-            value == "prefix" ||
             value == "disjoint"
 
         guard needsQuoting else { return value }
@@ -195,6 +194,19 @@ public struct HootEncoder: Sendable {
             }
         }
         return escaped
+    }
+
+    private func compactIRI(_ iri: String) -> String {
+        var result = iri
+        // Strip http://
+        if result.hasPrefix("http://") {
+            result = String(result.dropFirst("http://".count))
+        }
+        // Strip trailing / or #
+        if result.hasSuffix("/") || result.hasSuffix("#") {
+            result = String(result.dropLast())
+        }
+        return "//\(result)"
     }
 
     private func isStandardPrefix(_ name: String) -> Bool {

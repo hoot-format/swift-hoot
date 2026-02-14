@@ -12,7 +12,7 @@ struct HootEncoderTests {
             prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")]
         )
         let result = encoder.encode(doc)
-        #expect(result.contains("prefix ex: <http://example.org/>"))
+        #expect(result.contains("@ex //example.org"))
     }
 
     @Test("Compact mode omits standard prefixes")
@@ -26,9 +26,9 @@ struct HootEncoderTests {
             ]
         )
         let result = compactEncoder.encode(doc)
-        #expect(!result.contains("prefix owl:"))
-        #expect(!result.contains("prefix rdfs:"))
-        #expect(result.contains("prefix ex: <http://example.org/>"))
+        #expect(!result.contains("@owl"))
+        #expect(!result.contains("@rdfs"))
+        #expect(result.contains("@ex //example.org"))
     }
 
     @Test("Encodes class hierarchy with indentation")
@@ -321,7 +321,7 @@ struct HootEncoderTests {
         )
         let result = encoder.encode(doc)
 
-        #expect(result.contains("prefix ex: <http://example.org/>"))
+        #expect(result.contains("@ex //example.org"))
         #expect(result.contains("class owl:Thing"))
         #expect(result.contains(" ex:Person \"Person\""))
         #expect(result.contains("  ex:Politician \"Politician\""))
