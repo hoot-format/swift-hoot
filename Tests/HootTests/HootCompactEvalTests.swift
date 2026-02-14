@@ -87,7 +87,7 @@ struct HootCompactEvalTests {
                     ]
                 )),
                 .tabular(HootTabularSection(
-                    name: "ObjectProperty",
+                    name: "->",
                     fields: ["iri", "inverse", "characteristics", "domain", "range"],
                     rows: [
                         ["partOf", "hasPart", "transitive"],
@@ -96,7 +96,7 @@ struct HootCompactEvalTests {
                     ]
                 )),
                 .tabular(HootTabularSection(
-                    name: "DataProperty",
+                    name: "=>",
                     fields: ["iri", "domain", "range"],
                     rows: [
                         ["startDate", "Event", "xsd:date"],

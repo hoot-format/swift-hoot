@@ -79,7 +79,7 @@ struct HootEncoderTests {
             ]
         )
         let result = encoder.encode(doc)
-        #expect(result.contains("ObjectProperty{iri,inverse,characteristics}:"))
+        #expect(result.contains("->{iri,inverse,characteristics}:"))
         #expect(result.contains(" partOf,hasPart,transitive"))
         #expect(result.contains(" locatedIn,,transitive"))
         // Trailing empty field should be trimmed
@@ -100,7 +100,7 @@ struct HootEncoderTests {
             ]
         )
         let result = encoder.encode(doc)
-        #expect(result.contains("disjoint (ex:Person ex:Organization),(ex:Person ex:Place)"))
+        #expect(result.contains("! (ex:Person ex:Organization),(ex:Person ex:Place)"))
     }
 
     @Test("Encodes subject block")
@@ -327,9 +327,9 @@ struct HootEncoderTests {
         #expect(result.contains("  ex:Politician \"Politician\""))
         #expect(result.contains(" ex:Place \"Place\""))
         #expect(result.contains("  ex:City \"City\""))
-        #expect(result.contains("ObjectProperty{iri,label,inverse}:"))
+        #expect(result.contains("->{iri,label,inverse}:"))
         #expect(result.contains(" ex:partOf,part of,ex:hasPart"))
-        #expect(result.contains("disjoint (ex:Person ex:Place)"))
+        #expect(result.contains("! (ex:Person ex:Place)"))
     }
 
     @Test("Escapes special characters in strings")

@@ -69,8 +69,18 @@ public struct HootEncoder: Sendable {
 
     // MARK: - Tabular Section
 
+    private func sectionSymbol(_ name: String) -> String {
+        switch name {
+        case "ObjectProperty": return "->"
+        case "DataProperty": return "=>"
+        case "AnnotationProperty": return "@>"
+        default: return name
+        }
+    }
+
     private func encodeTabular(_ section: HootTabularSection, into lines: inout [String]) {
-        let header = "\(section.name){\(section.fields.joined(separator: ","))}:"
+        let symbol = sectionSymbol(section.name)
+        let header = "\(symbol){\(section.fields.joined(separator: ","))}:"
         lines.append(header)
         for row in section.rows {
             let trimmed = trimTrailingEmpty(row)
@@ -85,7 +95,7 @@ public struct HootEncoder: Sendable {
         let groups = section.groups.map { group in
             "(\(group.joined(separator: " ")))"
         }
-        lines.append("disjoint \(groups.joined(separator: ","))")
+        lines.append("! \(groups.joined(separator: ","))")
     }
 
     // MARK: - Subject Block
@@ -175,8 +185,7 @@ public struct HootEncoder: Sendable {
             value == "false" ||
             value == "null" ||
             value == "a" ||
-            value == "class" ||
-            value == "disjoint"
+            value == "class"
 
         guard needsQuoting else { return value }
         return "\"\(escapeString(value))\""

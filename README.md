@@ -33,7 +33,7 @@ let doc = HootDocument(
             ]
         )),
         .tabular(HootTabularSection(
-            name: "ObjectProperty",
+            name: "ObjectProperty",  // Encoded as "->"
             fields: ["iri", "label", "inverse"],
             rows: [
                 ["ex:partOf", "part of", "ex:hasPart"],
@@ -58,7 +58,7 @@ class owl:Thing
  ex:Person "Person"
   ex:Politician "Politician"
 
-ObjectProperty{iri,label,inverse}:
+->{iri,label,inverse}:
  ex:partOf,part of,ex:hasPart
 ```
 
