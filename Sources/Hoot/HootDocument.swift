@@ -146,6 +146,73 @@ public struct HootProperty: Sendable, Equatable {
     }
 }
 
+// MARK: - Default Prefix Conversion
+
+extension HootDocument {
+    /// Creates a copy with the named prefix converted to the default (empty) prefix.
+    ///
+    /// All IRI references using the named prefix (e.g., `"ex:Person"`) are rewritten
+    /// to use the default prefix (e.g., `":Person"`). This reduces token count by
+    /// eliminating the repeated prefix name.
+    public func usingDefaultPrefix(_ prefixName: String) -> HootDocument {
+        var doc = self
+        guard let idx = doc.prefixes.firstIndex(where: { $0.name == prefixName }) else { return doc }
+        doc.prefixes[idx].name = ""
+
+        let oldPrefix = prefixName + ":"
+
+        func replace(_ iri: String) -> String {
+            guard iri.hasPrefix(oldPrefix) else { return iri }
+            return ":" + iri[iri.index(iri.startIndex, offsetBy: oldPrefix.count)...]
+        }
+
+        func replaceValue(_ value: HootValue) -> HootValue {
+            switch value {
+            case .iri(let iri): return .iri(replace(iri))
+            case .inlineBlankNode(let props): return .inlineBlankNode(props.map(replaceProperty))
+            case .collection(let items): return .collection(items.map(replaceValue))
+            default: return value
+            }
+        }
+
+        func replaceProperty(_ prop: HootProperty) -> HootProperty {
+            HootProperty(
+                predicate: replace(prop.predicate),
+                objects: prop.objects.map(replaceValue)
+            )
+        }
+
+        func replaceClass(_ cls: HootClass) -> HootClass {
+            HootClass(
+                iri: replace(cls.iri),
+                label: cls.label,
+                children: cls.children.map(replaceClass)
+            )
+        }
+
+        for i in doc.sections.indices {
+            switch doc.sections[i] {
+            case .classHierarchy(var h):
+                h.root = replace(h.root)
+                h.classes = h.classes.map(replaceClass)
+                doc.sections[i] = .classHierarchy(h)
+            case .tabular(var t):
+                t.rows = t.rows.map { $0.map(replace) }
+                doc.sections[i] = .tabular(t)
+            case .disjoint(var d):
+                d.groups = d.groups.map { $0.map(replace) }
+                doc.sections[i] = .disjoint(d)
+            case .subjectBlock(var b):
+                b.subject = replace(b.subject)
+                b.properties = b.properties.map(replaceProperty)
+                doc.sections[i] = .subjectBlock(b)
+            }
+        }
+
+        return doc
+    }
+}
+
 /// An RDF value (object position in a triple).
 public indirect enum HootValue: Sendable, Equatable {
     /// IRI reference (prefixed or full).

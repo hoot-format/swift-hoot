@@ -18,10 +18,19 @@ public struct HootEncoder: Sendable {
 
     /// Encode a document to HOOT format string.
     public func encode(_ document: HootDocument) -> String {
+        // Compact mode: convert single custom prefix to default (empty) prefix
+        var doc = document
+        if mode == .compact {
+            let customPrefixes = doc.prefixes.filter { !isStandardPrefix($0.name) && !$0.name.isEmpty }
+            if customPrefixes.count == 1 {
+                doc = doc.usingDefaultPrefix(customPrefixes[0].name)
+            }
+        }
+
         var lines: [String] = []
 
         // 1. Prefix declarations
-        for prefix in document.prefixes {
+        for prefix in doc.prefixes {
             if mode == .compact && isStandardPrefix(prefix.name) {
                 continue
             }
@@ -29,7 +38,7 @@ public struct HootEncoder: Sendable {
         }
 
         // 2. Sections
-        for section in document.sections {
+        for section in doc.sections {
             if !lines.isEmpty { lines.append("") }
             switch section {
             case .classHierarchy(let hierarchy):
