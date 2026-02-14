@@ -152,8 +152,8 @@ extension HootDocument {
     /// Creates a copy with the named prefix converted to the default (empty) prefix.
     ///
     /// All IRI references using the named prefix (e.g., `"ex:Person"`) are rewritten
-    /// to use the default prefix (e.g., `":Person"`). This reduces token count by
-    /// eliminating the repeated prefix name.
+    /// to bare names (e.g., `"Person"`). The `@ //example.org` declaration establishes
+    /// the namespace, so the prefix is unnecessary.
     public func usingDefaultPrefix(_ prefixName: String) -> HootDocument {
         var doc = self
         guard let idx = doc.prefixes.firstIndex(where: { $0.name == prefixName }) else { return doc }
@@ -163,7 +163,7 @@ extension HootDocument {
 
         func replace(_ iri: String) -> String {
             guard iri.hasPrefix(oldPrefix) else { return iri }
-            return ":" + iri[iri.index(iri.startIndex, offsetBy: oldPrefix.count)...]
+            return String(iri[iri.index(iri.startIndex, offsetBy: oldPrefix.count)...])
         }
 
         func replaceValue(_ value: HootValue) -> HootValue {

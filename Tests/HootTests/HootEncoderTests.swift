@@ -348,14 +348,21 @@ struct HootEncoderTests {
                         HootClass(iri: "ex:Person", label: "Person", children: [
                             HootClass(iri: "ex:Scientist", label: "Scientist"),
                         ]),
+                        HootClass(iri: "ex:GovernmentAgency", label: "Government Agency"),
                     ]
                 ))
             ]
         )
         let result = compactEncoder.encode(doc)
         #expect(result.contains("@ //example.org"))
-        #expect(result.contains(" :Person \"Person\""))
-        #expect(result.contains("  :Scientist \"Scientist\""))
+        // Bare names (no colon prefix)
+        #expect(result.contains(" Person"))
+        #expect(result.contains("  Scientist"))
+        // Label omitted when it matches local name
+        #expect(!result.contains("\"Person\""))
+        #expect(!result.contains("\"Scientist\""))
+        // Label kept when it differs from local name
+        #expect(result.contains(" GovernmentAgency \"Government Agency\""))
         // owl:Thing should NOT be replaced
         #expect(result.contains("class owl:Thing"))
     }
@@ -377,8 +384,8 @@ struct HootEncoderTests {
             ]
         )
         let result = compactEncoder.encode(doc)
-        #expect(result.contains(" :partOf,part of,:hasPart"))
-        #expect(result.contains(" :locatedIn,located in"))
+        #expect(result.contains(" partOf,part of,hasPart"))
+        #expect(result.contains(" locatedIn,located in"))
     }
 
     @Test("Compact mode converts single custom prefix in disjoint section")
@@ -393,7 +400,7 @@ struct HootEncoderTests {
             ]
         )
         let result = compactEncoder.encode(doc)
-        #expect(result.contains("! (:Person :Organization)"))
+        #expect(result.contains("! (Person Organization)"))
     }
 
     @Test("Compact mode converts single custom prefix in subject blocks")
@@ -413,11 +420,11 @@ struct HootEncoderTests {
             ]
         )
         let result = compactEncoder.encode(doc)
-        #expect(result.contains(":Toyota:"))
-        #expect(result.contains(" a :Company"))
+        #expect(result.contains("Toyota:"))
+        #expect(result.contains(" a Company"))
         // rdfs:label should NOT be replaced
         #expect(result.contains(" rdfs:label \"Toyota\""))
-        #expect(result.contains(" :locatedIn :Japan"))
+        #expect(result.contains(" locatedIn Japan"))
     }
 
     @Test("Compact mode does NOT convert when multiple custom prefixes exist")
@@ -433,6 +440,7 @@ struct HootEncoderTests {
                     root: "owl:Thing",
                     classes: [
                         HootClass(iri: "ex:Person", label: "Person"),
+                        HootClass(iri: "ex:Agent", label: "エージェント"),
                     ]
                 ))
             ]
@@ -441,7 +449,11 @@ struct HootEncoderTests {
         // Both prefixes kept as named
         #expect(result.contains("@ex //example.org"))
         #expect(result.contains("@foaf //xmlns.com/foaf/0.1"))
-        #expect(result.contains(" ex:Person \"Person\""))
+        // Prefix kept, but redundant label still omitted in compact mode
+        #expect(result.contains(" ex:Person"))
+        #expect(!result.contains("\"Person\""))
+        // Non-matching label is kept
+        #expect(result.contains(" ex:Agent \"エージェント\""))
     }
 
     @Test("Lossless mode does NOT convert prefix to default")
@@ -491,29 +503,29 @@ struct HootEncoderTests {
         #expect(converted.prefixes[0].name == "")
         #expect(converted.prefixes[0].iri == "http://example.org/")
 
-        // Class hierarchy
+        // Class hierarchy — bare names (no colon prefix)
         if case .classHierarchy(let h) = converted.sections[0] {
             #expect(h.root == "owl:Thing")
-            #expect(h.classes[0].iri == ":A")
-            #expect(h.classes[0].children[0].iri == ":B")
+            #expect(h.classes[0].iri == "A")
+            #expect(h.classes[0].children[0].iri == "B")
         }
 
         // Tabular
         if case .tabular(let t) = converted.sections[1] {
-            #expect(t.rows[0] == [":p", ":q"])
+            #expect(t.rows[0] == ["p", "q"])
         }
 
         // Disjoint
         if case .disjoint(let d) = converted.sections[2] {
-            #expect(d.groups[0] == [":A", ":B"])
+            #expect(d.groups[0] == ["A", "B"])
         }
 
         // Subject block
         if case .subjectBlock(let b) = converted.sections[3] {
-            #expect(b.subject == ":S")
-            #expect(b.properties[0].predicate == ":rel")
+            #expect(b.subject == "S")
+            #expect(b.properties[0].predicate == "rel")
             if case .iri(let iri) = b.properties[0].objects[0] {
-                #expect(iri == ":O")
+                #expect(iri == "O")
             }
         }
     }

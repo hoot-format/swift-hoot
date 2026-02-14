@@ -68,12 +68,22 @@ public struct HootEncoder: Sendable {
         let indent = String(repeating: " ", count: depth)
         var line = "\(indent)\(cls.iri)"
         if let label = cls.label {
-            line += " \"\(escapeString(label))\""
+            // Compact mode: omit label when it matches the IRI local name
+            if mode != .compact || label != localName(of: cls.iri) {
+                line += " \"\(escapeString(label))\""
+            }
         }
         lines.append(line)
         for child in cls.children {
             encodeClass(child, depth: depth + 1, into: &lines)
         }
+    }
+
+    private func localName(of iri: String) -> String {
+        if let colonIndex = iri.lastIndex(of: ":") {
+            return String(iri[iri.index(after: colonIndex)...])
+        }
+        return iri
     }
 
     // MARK: - Tabular Section
