@@ -1,0 +1,112 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "Hoot-arm64-apple-macosx26.0-debug.module": ["<Hoot-arm64-apple-macosx26.0-debug.module>"]
+  "HootTests-arm64-apple-macosx26.0-debug.module": ["<HootTests-arm64-apple-macosx26.0-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<Hoot-arm64-apple-macosx26.0-debug.module>"]
+  "swift-hootPackageTests-arm64-apple-macosx26.0-debug.module": ["<swift-hootPackageTests-arm64-apple-macosx26.0-debug.module>"]
+  "swift-hootPackageTests-arm64-apple-macosx26.0-debug.test": ["<swift-hootPackageTests-arm64-apple-macosx26.0-debug.test>"]
+  "test": ["<Hoot-arm64-apple-macosx26.0-debug.module>","<HootTests-arm64-apple-macosx26.0-debug.module>","<swift-hootPackageTests-arm64-apple-macosx26.0-debug.test>"]
+default: "main"
+nodes:
+  "/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/1amageek/Desktop/hoot/swift-hoot/Tests/HootTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootDocument.swift","/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootEncoder.swift"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/sources"]
+    description: "Write auxiliary file /Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/sources"
+
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/1amageek/Desktop/hoot/swift-hoot/Tests/HootTests/HootEncoderTests.swift"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/sources"]
+    description: "Write auxiliary file /Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/sources"
+
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: []
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.derived/runner.swift"]
+
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/runner.swift.o"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.product/Objects.LinkFileList"
+
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.derived/runner.swift"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/sources"]
+    description: "Write auxiliary file /Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/sources"
+
+  "<Hoot-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/Hoot.swiftmodule"]
+    outputs: ["<Hoot-arm64-apple-macosx26.0-debug.module>"]
+
+  "<HootTests-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/HootTests.swiftmodule"]
+    outputs: ["<HootTests-arm64-apple-macosx26.0-debug.module>"]
+
+  "<swift-hootPackageTests-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/runner.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/swift_hootPackageTests.swiftmodule"]
+    outputs: ["<swift-hootPackageTests-arm64-apple-macosx26.0-debug.module>"]
+
+  "<swift-hootPackageTests-arm64-apple-macosx26.0-debug.test>":
+    tool: phony
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.xctest/Contents/MacOS/swift-hootPackageTests"]
+    outputs: ["<swift-hootPackageTests-arm64-apple-macosx26.0-debug.test>"]
+
+  "C.Hoot-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootDocument.swift","/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootEncoder.swift","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/sources"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/Hoot.swiftmodule"]
+    description: "Compiling Swift Module 'Hoot' (2 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","Hoot","-emit-dependencies","-emit-module","-emit-module-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/Hoot.swiftmodule","-output-file-map","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/sources","-I","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx10.13","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/include/Hoot-Swift.h","-swift-version","6","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","swift_hoot"]
+
+  "C.HootTests-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/Tests/HootTests/HootEncoderTests.swift","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/Hoot.swiftmodule","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/sources"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/HootTests.swiftmodule"]
+    description: "Compiling Swift Module 'HootTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","HootTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/HootTests.swiftmodule","-output-file-map","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/sources","-I","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","6","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","swift_hoot"]
+
+  "C.swift-hootPackageTests-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.derived/runner.swift","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/HootTests.swiftmodule","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/sources"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/runner.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/swift_hootPackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'swift_hootPackageTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","swift_hootPackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/swift_hootPackageTests.swiftmodule","-output-file-map","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/sources","-I","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx10.13","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/include/swift-hootPackageTests-Swift.h","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","swift_hoot"]
+
+  "C.swift-hootPackageTests-arm64-apple-macosx26.0-debug.test":
+    tool: shell
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift_hootPackageTests.build/runner.swift.o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.product/Objects.LinkFileList"]
+    outputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.xctest/Contents/MacOS/swift-hootPackageTests"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/swift-hootPackageTests.xctest/Contents/MacOS/swift-hootPackageTests"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug","-o","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.xctest/Contents/MacOS/swift-hootPackageTests","-module-name","swift_hootPackageTests","-Xlinker","-no_warn_duplicate_libraries","-Xlinker","-bundle","-Xlinker","-rpath","-Xlinker","@loader_path/../../../","@/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/swift-hootPackageTests.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/Hoot.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/HootTests.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Modules/swift_hootPackageTests.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/","/Users/1amageek/Desktop/hoot/swift-hoot/Tests/HootTests/","/Users/1amageek/Desktop/hoot/swift-hoot/Package.swift","/Users/1amageek/Desktop/hoot/swift-hoot/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

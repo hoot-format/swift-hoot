@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/master.swiftdeps"
+  },
+  "/Users/1amageek/Desktop/hoot/swift-hoot/Tests/HootTests/HootEncoderTests.swift": {
+    "dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.d",
+    "object": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swift.o",
+    "swiftmodule": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.swiftdeps",
+    "diagnostics": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/HootTests.build/HootEncoderTests.dia"
+  }
+}

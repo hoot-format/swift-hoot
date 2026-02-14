@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/master.swiftdeps"
+  },
+  "/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootDocument.swift": {
+    "dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.d",
+    "object": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swift.o",
+    "swiftmodule": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument~partial.swiftmodule",
+    "swift-dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.swiftdeps",
+    "diagnostics": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootDocument.dia"
+  },
+  "/Users/1amageek/Desktop/hoot/swift-hoot/Sources/Hoot/HootEncoder.swift": {
+    "dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.d",
+    "object": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swift.o",
+    "swiftmodule": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder~partial.swiftmodule",
+    "swift-dependencies": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.swiftdeps",
+    "diagnostics": "/Users/1amageek/Desktop/hoot/swift-hoot/.build/arm64-apple-macosx/debug/Hoot.build/HootEncoder.dia"
+  }
+}
