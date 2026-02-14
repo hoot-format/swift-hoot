@@ -9,41 +9,58 @@ struct HootEncoderTests {
     @Test("Encodes prefix declarations")
     func prefixes() {
         let doc = HootDocument(
-            prefixes: [("ex", "http://example.org/")]
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")]
         )
         let result = encoder.encode(doc)
-        #expect(result.contains("@prefix ex: <http://example.org/>"))
+        #expect(result.contains("prefix ex: <http://example.org/>"))
+    }
+
+    @Test("Compact mode omits standard prefixes")
+    func compactOmitsStandardPrefixes() {
+        let compactEncoder = HootEncoder(mode: .compact)
+        let doc = HootDocument(
+            prefixes: [
+                HootPrefix(name: "owl", iri: "http://www.w3.org/2002/07/owl#"),
+                HootPrefix(name: "rdfs", iri: "http://www.w3.org/2000/01/rdf-schema#"),
+                HootPrefix(name: "ex", iri: "http://example.org/"),
+            ]
+        )
+        let result = compactEncoder.encode(doc)
+        #expect(!result.contains("prefix owl:"))
+        #expect(!result.contains("prefix rdfs:"))
+        #expect(result.contains("prefix ex: <http://example.org/>"))
     }
 
     @Test("Encodes class hierarchy with indentation")
     func classHierarchy() {
         let doc = HootDocument(
-            classes: [
-                HootClass(name: "Person", children: [
-                    HootClass(name: "Politician"),
-                    HootClass(name: "Scientist"),
-                ]),
-                HootClass(name: "Organization", children: [
-                    HootClass(name: "Company"),
-                    HootClass(name: "GovernmentAgency", children: [
-                        HootClass(name: "Municipality"),
-                    ]),
-                ]),
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [
+                        HootClass(iri: "ex:Person", label: "Person", children: [
+                            HootClass(iri: "ex:Politician", label: "Politician"),
+                            HootClass(iri: "ex:Scientist", label: "Scientist"),
+                        ]),
+                        HootClass(iri: "ex:Organization", label: "Organization", children: [
+                            HootClass(iri: "ex:Company", label: "Company"),
+                            HootClass(iri: "ex:GovernmentAgency", label: "Government Agency", children: [
+                                HootClass(iri: "ex:Municipality", label: "Municipality"),
+                            ]),
+                        ]),
+                    ]
+                ))
             ]
         )
         let result = encoder.encode(doc)
-        let expected = """
-        owl:Thing
-         Person
-          Politician
-          Scientist
-         Organization
-          Company
-          GovernmentAgency
-           Municipality
-
-        """
-        #expect(result == expected)
+        #expect(result.contains("class owl:Thing"))
+        #expect(result.contains(" ex:Person \"Person\""))
+        #expect(result.contains("  ex:Politician \"Politician\""))
+        #expect(result.contains("  ex:Scientist \"Scientist\""))
+        #expect(result.contains(" ex:Organization \"Organization\""))
+        #expect(result.contains("  ex:Company \"Company\""))
+        #expect(result.contains("  ex:GovernmentAgency \"Government Agency\""))
+        #expect(result.contains("   ex:Municipality \"Municipality\""))
     }
 
     @Test("Encodes tabular section")
@@ -70,70 +87,171 @@ struct HootEncoderTests {
         #expect(!result.contains("hasFounder,founderOf,"))
     }
 
-    @Test("Encodes inline section")
-    func inlineSection() {
+    @Test("Encodes disjoint section")
+    func disjointSection() {
         let doc = HootDocument(
             sections: [
-                .inline(HootInlineSection(
-                    name: "Disjoint",
+                .disjoint(HootDisjointSection(
                     groups: [
-                        ["Person", "Organization"],
-                        ["Person", "Place"],
+                        ["ex:Person", "ex:Organization"],
+                        ["ex:Person", "ex:Place"],
                     ]
                 ))
             ]
         )
         let result = encoder.encode(doc)
-        #expect(result.contains("Disjoint: {Person,Organization},{Person,Place}"))
+        #expect(result.contains("disjoint (ex:Person ex:Organization),(ex:Person ex:Place)"))
     }
 
-    @Test("Encodes full document")
-    func fullDocument() {
+    @Test("Encodes subject block")
+    func subjectBlock() {
         let doc = HootDocument(
-            prefixes: [("ex", "http://example.org/")],
-            classes: [
-                HootClass(name: "Person", children: [
-                    HootClass(name: "Politician"),
-                ]),
-                HootClass(name: "Place", children: [
-                    HootClass(name: "City"),
-                ]),
-            ],
             sections: [
-                .tabular(HootTabularSection(
-                    name: "ObjectProperty",
-                    fields: ["iri", "inverse"],
-                    rows: [
-                        ["partOf", "hasPart"],
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Parent",
+                    properties: [
+                        HootProperty(predicate: "a", objects: [.iri("owl:Class")]),
+                        HootProperty(predicate: "rdfs:label", objects: [.literal("Parent")]),
                     ]
-                )),
-                .inline(HootInlineSection(
-                    name: "Disjoint",
-                    groups: [["Person", "Place"]]
-                )),
+                ))
             ]
         )
         let result = encoder.encode(doc)
-
-        let expected = """
-        @prefix ex: <http://example.org/>
-
-        owl:Thing
-         Person
-          Politician
-         Place
-          City
-
-        ObjectProperty{iri,inverse}:
-         partOf,hasPart
-
-        Disjoint: {Person,Place}
-
-        """
-        #expect(result == expected)
+        #expect(result.contains("ex:Parent:"))
+        #expect(result.contains(" a owl:Class"))
+        #expect(result.contains(" rdfs:label \"Parent\""))
     }
 
-    @Test("Quotes values containing special characters")
+    @Test("Encodes subject block with multiple objects")
+    func multipleObjects() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Alice",
+                    properties: [
+                        HootProperty(predicate: "ex:knows", objects: [.iri("ex:Bob"), .iri("ex:Carol")]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" ex:knows ex:Bob,ex:Carol"))
+    }
+
+    @Test("Encodes inline blank node")
+    func inlineBlankNode() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Parent",
+                    properties: [
+                        HootProperty(predicate: "owl:equivalentClass", objects: [
+                            .inlineBlankNode([
+                                HootProperty(predicate: "a", objects: [.iri("owl:Restriction")]),
+                                HootProperty(predicate: "owl:onProperty", objects: [.iri("ex:hasChild")]),
+                            ])
+                        ]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" owl:equivalentClass ["))
+        #expect(result.contains("  a owl:Restriction"))
+        #expect(result.contains("  owl:onProperty ex:hasChild"))
+        #expect(result.contains(" ]"))
+    }
+
+    @Test("Encodes collection")
+    func collection() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "_:disj1",
+                    properties: [
+                        HootProperty(predicate: "a", objects: [.iri("owl:AllDisjointClasses")]),
+                        HootProperty(predicate: "owl:members", objects: [
+                            .collection([.iri("ex:Person"), .iri("ex:Organization")])
+                        ]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains("_:disj1:"))
+        #expect(result.contains(" a owl:AllDisjointClasses"))
+        #expect(result.contains(" owl:members (ex:Person ex:Organization)"))
+    }
+
+    @Test("Encodes literal with datatype")
+    func literalWithDatatype() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Alice",
+                    properties: [
+                        HootProperty(predicate: "ex:age", objects: [.literal("30", datatype: "xsd:integer")]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" ex:age \"30\"^^xsd:integer"))
+    }
+
+    @Test("Encodes literal with language tag")
+    func literalWithLanguage() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Alice",
+                    properties: [
+                        HootProperty(predicate: "rdfs:label", objects: [.literal("Alice", language: "en")]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" rdfs:label \"Alice\"@en"))
+    }
+
+    @Test("Encodes number and boolean values")
+    func numberAndBoolean() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Thing",
+                    properties: [
+                        HootProperty(predicate: "ex:count", objects: [.number("42")]),
+                        HootProperty(predicate: "ex:active", objects: [.boolean(true)]),
+                        HootProperty(predicate: "ex:deleted", objects: [.boolean(false)]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" ex:count 42"))
+        #expect(result.contains(" ex:active true"))
+        #expect(result.contains(" ex:deleted false"))
+    }
+
+    @Test("Encodes blank node reference")
+    func blankNodeReference() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Alice",
+                    properties: [
+                        HootProperty(predicate: "ex:address", objects: [.blankNode("addr1")]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains(" ex:address _:addr1"))
+    }
+
+    @Test("Quotes values containing special characters in tabular rows")
     func quoting() {
         let doc = HootDocument(
             sections: [
@@ -142,7 +260,7 @@ struct HootEncoderTests {
                     fields: ["a", "b"],
                     rows: [
                         ["normal", "has,comma"],
-                        ["has:colon", "plain"],
+                        ["has(paren", "plain"],
                         ["true", "false"],
                     ]
                 ))
@@ -150,14 +268,13 @@ struct HootEncoderTests {
         )
         let result = encoder.encode(doc)
         #expect(result.contains("\"has,comma\""))
-        #expect(result.contains("\"has:colon\""))
+        #expect(result.contains("\"has(paren\""))
         #expect(result.contains("\"true\""))
         #expect(result.contains("\"false\""))
     }
 
-    @Test("Empty string is quoted")
-    func emptyStringQuoted() {
-        let encoder = HootEncoder()
+    @Test("Empty field is not quoted in tabular rows")
+    func emptyFieldNotQuoted() {
         let doc = HootDocument(
             sections: [
                 .tabular(HootTabularSection(
@@ -172,5 +289,64 @@ struct HootEncoderTests {
         let result = encoder.encode(doc)
         // Middle empty field should be just empty (between commas), not quoted
         #expect(result.contains(" x,,y"))
+    }
+
+    @Test("Encodes full lossless document")
+    func fullLosslessDocument() {
+        let doc = HootDocument(
+            prefixes: [HootPrefix(name: "ex", iri: "http://example.org/")],
+            sections: [
+                .classHierarchy(HootClassHierarchy(
+                    root: "owl:Thing",
+                    classes: [
+                        HootClass(iri: "ex:Person", label: "Person", children: [
+                            HootClass(iri: "ex:Politician", label: "Politician"),
+                        ]),
+                        HootClass(iri: "ex:Place", label: "Place", children: [
+                            HootClass(iri: "ex:City", label: "City"),
+                        ]),
+                    ]
+                )),
+                .tabular(HootTabularSection(
+                    name: "ObjectProperty",
+                    fields: ["iri", "label", "inverse"],
+                    rows: [
+                        ["ex:partOf", "part of", "ex:hasPart"],
+                    ]
+                )),
+                .disjoint(HootDisjointSection(
+                    groups: [["ex:Person", "ex:Place"]]
+                )),
+            ]
+        )
+        let result = encoder.encode(doc)
+
+        #expect(result.contains("prefix ex: <http://example.org/>"))
+        #expect(result.contains("class owl:Thing"))
+        #expect(result.contains(" ex:Person \"Person\""))
+        #expect(result.contains("  ex:Politician \"Politician\""))
+        #expect(result.contains(" ex:Place \"Place\""))
+        #expect(result.contains("  ex:City \"City\""))
+        #expect(result.contains("ObjectProperty{iri,label,inverse}:"))
+        #expect(result.contains(" ex:partOf,part of,ex:hasPart"))
+        #expect(result.contains("disjoint (ex:Person ex:Place)"))
+    }
+
+    @Test("Escapes special characters in strings")
+    func escapeCharacters() {
+        let doc = HootDocument(
+            sections: [
+                .subjectBlock(HootSubjectBlock(
+                    subject: "ex:Test",
+                    properties: [
+                        HootProperty(predicate: "rdfs:label", objects: [
+                            .literal("line1\nline2\twith \"quotes\" and \\backslash")
+                        ]),
+                    ]
+                ))
+            ]
+        )
+        let result = encoder.encode(doc)
+        #expect(result.contains("\"line1\\nline2\\twith \\\"quotes\\\" and \\\\backslash\""))
     }
 }

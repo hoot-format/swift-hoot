@@ -1,75 +1,99 @@
-/// A HOOT document representing an ontology in compact form.
+/// A HOOT document representing an RDF graph in compact form.
 ///
 /// HOOT (Hierarchical Ontology-Optimized Tokens) encodes OWL ontology data
 /// using indentation-based class hierarchy, tabular property declarations,
-/// and inline disjoint sets.
+/// inline disjoint sets, and general-purpose subject blocks.
 public struct HootDocument: Sendable, Equatable {
 
-    /// Namespace prefix declarations (e.g., `["ex": "http://example.org/"]`).
-    public var prefixes: [(short: String, iri: String)]
+    /// Namespace prefix declarations (e.g., `[("ex", "http://example.org/")]`).
+    public var prefixes: [HootPrefix]
 
-    /// Root-level classes (children of `owl:Thing`).
-    public var classes: [HootClass]
-
-    /// Tabular and inline sections (properties, disjoints, etc.).
+    /// Sections in document order.
     public var sections: [HootSection]
 
     public init(
-        prefixes: [(short: String, iri: String)] = [],
-        classes: [HootClass] = [],
+        prefixes: [HootPrefix] = [],
         sections: [HootSection] = []
     ) {
         self.prefixes = prefixes
-        self.classes = classes
         self.sections = sections
-    }
-
-    public static func == (lhs: HootDocument, rhs: HootDocument) -> Bool {
-        guard lhs.prefixes.count == rhs.prefixes.count else { return false }
-        for (l, r) in zip(lhs.prefixes, rhs.prefixes) {
-            guard l.short == r.short, l.iri == r.iri else { return false }
-        }
-        return lhs.classes == rhs.classes && lhs.sections == rhs.sections
     }
 }
 
-/// A class in the ontology hierarchy.
-///
-/// Children represent `rdfs:subClassOf` relationships.
-public struct HootClass: Sendable, Equatable {
-
-    /// Class name (short form, e.g., `"Person"` not `"ex:Person"`).
+/// A prefix declaration.
+public struct HootPrefix: Sendable, Equatable {
+    /// Short prefix name (e.g., `"ex"`).
     public var name: String
 
-    /// Subclasses of this class.
-    public var children: [HootClass]
+    /// Full IRI (e.g., `"http://example.org/"`).
+    public var iri: String
 
-    public init(name: String, children: [HootClass] = []) {
+    public init(name: String, iri: String) {
         self.name = name
-        self.children = children
+        self.iri = iri
     }
 }
 
 /// A section in a HOOT document.
 public enum HootSection: Sendable, Equatable {
-    /// Tabular section with header fields and data rows.
+    /// Class hierarchy (compact OWL pattern).
+    case classHierarchy(HootClassHierarchy)
+
+    /// Tabular section (e.g., ObjectProperty, DataProperty).
     case tabular(HootTabularSection)
 
-    /// Inline section with grouped values.
-    case inline(HootInlineSection)
+    /// Disjoint class sets (compact OWL pattern).
+    case disjoint(HootDisjointSection)
+
+    /// General-purpose subject block.
+    case subjectBlock(HootSubjectBlock)
 }
 
-/// A tabular section (e.g., `ObjectProperty{iri,inverse,characteristics}:`).
-public struct HootTabularSection: Sendable, Equatable {
+// MARK: - Class Hierarchy
 
-    /// Section name (e.g., `"ObjectProperty"`).
+/// A class hierarchy rooted at a given class (typically `owl:Thing`).
+public struct HootClassHierarchy: Sendable, Equatable {
+    /// Root class IRI (e.g., `"owl:Thing"`).
+    public var root: String
+
+    /// Top-level classes under the root.
+    public var classes: [HootClass]
+
+    public init(root: String = "owl:Thing", classes: [HootClass] = []) {
+        self.root = root
+        self.classes = classes
+    }
+}
+
+/// A class in the ontology hierarchy.
+public struct HootClass: Sendable, Equatable {
+    /// Class IRI (e.g., `"ex:Person"` in lossless, `"Person"` in compact).
+    public var iri: String
+
+    /// Explicit label. `nil` means derive from IRI local name.
+    public var label: String?
+
+    /// Subclasses.
+    public var children: [HootClass]
+
+    public init(iri: String, label: String? = nil, children: [HootClass] = []) {
+        self.iri = iri
+        self.label = label
+        self.children = children
+    }
+}
+
+// MARK: - Tabular Section
+
+/// A tabular section (e.g., `ObjectProperty{iri,label,inverse,...}:`).
+public struct HootTabularSection: Sendable, Equatable {
+    /// Section type name (e.g., `"ObjectProperty"`, `"DataProperty"`).
     public var name: String
 
     /// Field names declared in the header.
     public var fields: [String]
 
     /// Data rows. Each row is an array of field values.
-    /// Empty strings represent omitted fields.
     public var rows: [[String]]
 
     public init(name: String, fields: [String], rows: [[String]] = []) {
@@ -79,17 +103,69 @@ public struct HootTabularSection: Sendable, Equatable {
     }
 }
 
-/// An inline section (e.g., `Disjoint: {Person,Organization},{Person,Place}`).
-public struct HootInlineSection: Sendable, Equatable {
+// MARK: - Disjoint Section
 
-    /// Section name (e.g., `"Disjoint"`).
-    public var name: String
-
-    /// Groups of values. Each group is a set of class names.
+/// Disjoint class declarations.
+public struct HootDisjointSection: Sendable, Equatable {
+    /// Groups of mutually disjoint classes.
+    /// Each group is a list of class IRIs.
     public var groups: [[String]]
 
-    public init(name: String, groups: [[String]] = []) {
-        self.name = name
+    public init(groups: [[String]] = []) {
         self.groups = groups
     }
+}
+
+// MARK: - Subject Block
+
+/// A general-purpose subject block for arbitrary triples.
+public struct HootSubjectBlock: Sendable, Equatable {
+    /// Subject IRI or blank node label.
+    public var subject: String
+
+    /// Predicate-object pairs.
+    public var properties: [HootProperty]
+
+    public init(subject: String, properties: [HootProperty] = []) {
+        self.subject = subject
+        self.properties = properties
+    }
+}
+
+/// A predicate-object pair in a subject block.
+public struct HootProperty: Sendable, Equatable {
+    /// Predicate IRI (or `"a"` for `rdf:type`).
+    public var predicate: String
+
+    /// Object values.
+    public var objects: [HootValue]
+
+    public init(predicate: String, objects: [HootValue]) {
+        self.predicate = predicate
+        self.objects = objects
+    }
+}
+
+/// An RDF value (object position in a triple).
+public indirect enum HootValue: Sendable, Equatable {
+    /// IRI reference (prefixed or full).
+    case iri(String)
+
+    /// String literal, optionally with datatype or language tag.
+    case literal(String, datatype: String? = nil, language: String? = nil)
+
+    /// Numeric literal.
+    case number(String)
+
+    /// Boolean literal.
+    case boolean(Bool)
+
+    /// Blank node reference.
+    case blankNode(String)
+
+    /// Inline anonymous blank node with properties.
+    case inlineBlankNode([HootProperty])
+
+    /// RDF collection (list).
+    case collection([HootValue])
 }
